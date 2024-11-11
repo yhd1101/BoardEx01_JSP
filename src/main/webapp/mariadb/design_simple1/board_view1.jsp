@@ -1,5 +1,69 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+
+<%@ page import="javax.naming.Context" %>
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="javax.naming.NamingException" %>
+
+<%@ page import="javax.sql.DataSource" %>
+
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.SQLException" %>
+
+<%@ page import="java.sql.PreparedStatement" %>
+<%@ page import="java.sql.ResultSet" %>
+
+<%
+	//seq가져오기
+	String seq = request.getParameter("seq");
+
+	String subject = "";
+	String writer = "";
+	String mail  = "";
+	String wip = "";
+	String date = "";
+	String hit = "";
+	String content = "";
+	Connection conn = null;
+	PreparedStatement psmt = null;
+	ResultSet rs = null;
+
+
+	try {
+		Context initCtx = new InitialContext();
+		Context envCtx = (Context) initCtx.lookup("java:comp/env");
+		DataSource dataSource = (DataSource) envCtx.lookup("jdbc/mariadb1");
+
+		conn = dataSource.getConnection();
+
+		String sql = "select subject, writer,  mail, wip, date, hit, content  from board1 where seq=?";
+
+		psmt = conn.prepareStatement( sql);
+		psmt.setString(1, seq);
+		rs = psmt.executeQuery();
+
+
+		if (rs.next()) {
+			subject = rs.getString("subject");
+			writer = rs.getString("writer");
+			mail = rs.getString("mail");
+			date = rs.getString("date");
+			wip = rs.getString("wip");
+			hit = rs.getString("hit");
+			content = rs.getString("content");
+		}
+
+	} catch ( NamingException e) {
+		System.out.println("에러 " + e.getMessage());
+	} catch ( SQLException e) {
+		System.out.println("에러 " + e.getMessage());
+	} finally {
+		if (rs !=null) rs.close();
+		if (psmt !=null) psmt.close();
+		if ( conn != null) conn.close();
+	}
+
+%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -23,18 +87,18 @@
 			<table>
 			<tr>
 				<th width="10%">제목</th>
-				<td width="60%">제목입니다.</td>
+				<td width="60%"><%=subject%></td>
 				<th width="10%">등록일</th>
-				<td width="20%">2017.01.31 09:57</td>
+				<td width="20%"><%=date%></td>
 			</tr>
 			<tr>
 				<th>글쓴이</th>
-				<td>작성자(test@test.com)(000.000.000.000)</td>
+				<td><%=writer%>(<%=mail%>)(<%=wip%>)</td>
 				<th>조회</th>
-				<td>3</td>
+				<td><%=hit%></td>
 			</tr>
 			<tr>
-				<td colspan="4" height="200" valign="top" style="padding: 20px; line-height: 160%">내용입니다.</td>
+				<td colspan="4" height="200" valign="top" style="padding: 20px; line-height: 160%"><%=content%></td>
 			</tr>
 			</table>
 		</div>
