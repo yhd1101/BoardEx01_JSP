@@ -50,7 +50,7 @@
 			date = rs.getString("date");
 			wip = rs.getString("wip");
 			hit = rs.getString("hit");
-			content = rs.getString("content");
+			content = rs.getString("content").replace("\n", "<br />");
 		}
 
 	} catch ( NamingException e) {
